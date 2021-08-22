@@ -1,0 +1,25 @@
+{
+  "name": "@enginefarm/cli",
+  "version": "0.0.1",
+  "description": "CLI for management game code",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "(rm ./dist -r || true) && tsc -p ."
+  },
+  "bin": {
+    "ef-cli": "./dist/index.js"
+  },
+  "author": "Patryk Tyszko <patryk@tyszko.dev> (engine.farm)",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.5.1",
+    "commander": "^7.2.0",
+    "md5-file": "^5.0.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.2",
+    "@types/node-fetch": "^2.5.10",
+    "typescript": "^4.3.5"
+  }
+}

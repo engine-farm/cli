@@ -1,23 +1,34 @@
 {
-  "name": "@engine-farm/cli",
-  "version": "0.0.1",
+  "name": "@engine-farm/game-code",
+  "version": "0.0.7",
   "description": "CLI for management game code",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "build": "(rm ./dist -r || true) && tsc -p ."
+    "build": "(rm ./lib -r || true) && tsc -p .",
+    "create": "npm run build && npm run test",
+    "test": "npm i -g && efg"
   },
   "bin": {
-    "ef-cli": "./dist/index.js"
+    "efg": "./lib/index.js"
   },
+  "files": [
+    "lib"
+  ],
   "author": "Patryk Tyszko <patryk@tyszko.dev> (engine.farm)",
   "license": "MIT",
+  "homepage": "https://engine.farm",
+  "repository": {
+    "url": "https://github.com/engine-farm/cli"
+  },
   "dependencies": {
     "chokidar": "^3.5.1",
     "commander": "^7.2.0",
+    "form-data": "^3.0.1",
     "md5-file": "^5.0.0",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
+    "@types/form-data": "^2.5.0",
     "@types/node": "^15.12.2",
     "@types/node-fetch": "^2.5.10",
     "typescript": "^4.3.5"

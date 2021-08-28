@@ -6,35 +6,46 @@ export class LoginCommand {
   constructor(private program: commander.Command) {
     this.program
       .command("login <accessToken> <agentToken> <agentUrl>")
-      .action(async (accessToken, agentToken, agentUrl) => {
-        const agentApiUrl = "https://" + agentUrl;
-        const managerApiUrl = "http://dev1.engine.farm:3001";
-        const user = await ApiEngineFarm.verifyToken(
+      .option("-m, --manager-api <managerApi>", "URL to manager api")
+      .action(
+        async (
           accessToken,
-          managerApiUrl
-        );
-        const authorized = await ApiAgent.verifyToken(agentToken, agentApiUrl);
-        if (!authorized) {
-          throw new Error("Invalid token");
-        }
-        return Config.saveLocal({
-          agent: {
-            token: agentToken,
-            apiUrl: agentApiUrl,
-          },
-          manager: {
-            token: accessToken,
-            apiUrl: managerApiUrl,
-          },
-        })
-          .then(() => {
-            console.log("Success logged in");
+          agentToken,
+          agentUrl,
+          options?: { managerApi: string }
+        ) => {
+          const agentApiUrl = "https://" + agentUrl;
+          const managerApiUrl =
+            options?.managerApi || "https://api.engine.farm";
+          const user = await ApiEngineFarm.verifyToken(
+            accessToken,
+            managerApiUrl
+          );
+          const authorized = await ApiAgent.verifyToken(
+            agentToken,
+            agentApiUrl
+          );
+          if (!authorized) {
+            throw new Error("Invalid token");
+          }
+          return Config.saveLocal({
+            agent: {
+              token: agentToken,
+              apiUrl: agentApiUrl,
+            },
+            manager: {
+              token: accessToken,
+              apiUrl: managerApiUrl,
+            },
           })
-          .catch(() => {
-            throw new Error("Error saving config file");
-          });
-      });
+            .then(() => {
+              console.log("Success logged in");
+              process.exit(0);
+            })
+            .catch(() => {
+              throw new Error("Error saving config file");
+            });
+        }
+      );
   }
 }
-
-// c2ea146ea5fab46ebaeecc9ea3c49269 test agent-test2-europe-nuremberg-a.ept.run

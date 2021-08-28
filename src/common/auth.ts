@@ -1,7 +1,7 @@
 export class Auth {
     static userToken: string;
-    static projectAgent;
-    static manager;
+    static projectAgent: string;
+    static manager: string;
 
     static async getToken(){
         // if(!this.userToken){

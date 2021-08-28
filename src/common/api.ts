@@ -1,8 +1,9 @@
 import { Auth } from "./auth";
 import fetch from "node-fetch";
 import { Config } from "./config";
-import * as FormData from "form-data";
-import { request } from "http";
+import FormData from "form-data";
+import { request as requestHttp} from "http";
+import { request as requestHttps} from "https";
 import { Utils } from "./utils";
 const md5File = require("md5-file");
 import { promises as fs } from "fs";
@@ -19,8 +20,8 @@ export interface ProjectFileChecksum {
 }
 
 export class ApiEngineFarm {
-  static async headers() {
-    const token = await Auth.getToken();
+  static async headers(injectedToken?: string) {
+    const token = injectedToken || await Auth.getToken();
     const headers: { [index: string]: string } = {
       "content-type": "application/json",
     };
@@ -38,19 +39,18 @@ export class ApiEngineFarm {
   }
 
   static async verifyToken(token: string, managerUrl?: string) {
-    // const token = await Auth.getToken();
     return fetch(
       `${managerUrl || (await Config.getConfig()).manager.apiUrl}/user/me`,
       {
-        headers: await this.headers(),
+        headers: await this.headers(token),
       }
     ).then((res) => res.json());
   }
 }
 
 export class ApiAgent {
-  static async headers() {
-    const token = await Auth.getToken();
+  static async headers(injectedToken?: string) {
+    const token = injectedToken || await Auth.getToken();
     const headers: { [index: string]: string } = {
       "content-type": "application/json",
     };
@@ -99,13 +99,10 @@ export class ApiAgent {
   }
 
   static async verifyToken(token: string, projectAgentUrl?: string) {
-    // const token = await Auth.getToken();
-    const config = await Config.getConfig();
-    console.log(`${projectAgentUrl || config.agent.apiUrl}/auth/verify-token`);
     return fetch(
-      `${projectAgentUrl || config.agent.apiUrl}/auth/verify-token`,
+      `${projectAgentUrl || (await Config.getConfig()).agent.apiUrl}/auth/verify-token`,
       {
-        headers: await this.headers(),
+        headers: await this.headers(token),
         // method: "POST",
         // body: JSON.stringify({ token }),
       }
@@ -142,8 +139,9 @@ export class FileSync {
     });
     form.append("filePath", fileProjectPath);
     form.append("fileName", fileName);
-    const req = request(
-      `${config.agent.apiUrl}/files/synchronization`,
+    const apiUrl = config.agent.apiUrl;
+    const req = (apiUrl.startsWith('https') ? requestHttps : requestHttp)(
+      `${apiUrl}/files/synchronization`,
       {
         method: "POST",
         headers: {
@@ -182,7 +180,7 @@ export class FileSync {
     });
   }
 
-  static async diff(projectPath: string){
+  static async diff(projectPath: string) {
     return new Promise<string[]>((resolve, reject) => {
       Utils.scanDir(projectPath, (err, res) => {
         if (err) {
@@ -207,6 +205,6 @@ export class FileSync {
       })
       .then((files) => {
         return ApiAgent.diff(files);
-      })
+      });
   }
 }

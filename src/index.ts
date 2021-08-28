@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Command } from "commander";
 import { DiffCommand } from "./commands/diff";
 import { LoginCommand } from "./commands/login";

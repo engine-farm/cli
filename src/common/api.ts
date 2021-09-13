@@ -2,8 +2,8 @@ import { Auth } from "./auth";
 import fetch from "node-fetch";
 import { Config } from "./config";
 import FormData from "form-data";
-import { request as requestHttp} from "http";
-import { request as requestHttps} from "https";
+import { request as requestHttp } from "http";
+import { request as requestHttps } from "https";
 import { Utils } from "./utils";
 const md5File = require("md5-file");
 import { promises as fs } from "fs";
@@ -21,7 +21,7 @@ export interface ProjectFileChecksum {
 
 export class ApiEngineFarm {
   static async headers(injectedToken?: string) {
-    const token = injectedToken || await Auth.getToken();
+    const token = injectedToken || (await Auth.getToken());
     const headers: { [index: string]: string } = {
       "content-type": "application/json",
     };
@@ -50,7 +50,7 @@ export class ApiEngineFarm {
 
 export class ApiAgent {
   static async headers(injectedToken?: string) {
-    const token = injectedToken || await Auth.getToken();
+    const token = injectedToken || (await Auth.getToken());
     const headers: { [index: string]: string } = {
       "content-type": "application/json",
     };
@@ -98,9 +98,25 @@ export class ApiAgent {
     return await res.json();
   }
 
+  static async generateTypes() {
+    const config = await Config.getConfig();
+    const auth = await this.verifyToken(
+      config.agent.token,
+      config.agent.apiUrl
+    );
+
+    return fetch(`${config.agent.apiUrl}/files/generate-types`, {
+      headers: await this.headers(),
+    }).then((res) => {
+      return res.text();
+    });
+  }
+
   static async verifyToken(token: string, projectAgentUrl?: string) {
     return fetch(
-      `${projectAgentUrl || (await Config.getConfig()).agent.apiUrl}/auth/verify-token`,
+      `${
+        projectAgentUrl || (await Config.getConfig()).agent.apiUrl
+      }/auth/verify-token`,
       {
         headers: await this.headers(token),
         // method: "POST",
@@ -140,7 +156,7 @@ export class FileSync {
     form.append("filePath", fileProjectPath);
     form.append("fileName", fileName);
     const apiUrl = config.agent.apiUrl;
-    const req = (apiUrl.startsWith('https') ? requestHttps : requestHttp)(
+    const req = (apiUrl.startsWith("https") ? requestHttps : requestHttp)(
       `${apiUrl}/files/synchronization`,
       {
         method: "POST",
